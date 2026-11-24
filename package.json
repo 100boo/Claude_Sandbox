@@ -1,0 +1,22 @@
+{
+  "name": "narrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mobile-first PWA that reads EPUB/TXT/HTML/Markdown books aloud with on-device text-to-speech.",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "test": "node --test \"tests/unit/**/*.test.mjs\"",
+    "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/**/*.test.mjs\"",
+    "test:all": "npm test && npm run test:e2e",
+    "icons": "node scripts/make-icons.mjs",
+    "vendor": "node scripts/vendor.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "jszip": "3.10.1",
+    "playwright": "1.63.0"
+  }
+}

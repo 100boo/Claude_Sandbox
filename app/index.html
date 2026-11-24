@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b1f2a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Narrator">
+  <title>Narrator</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- LIBRARY -->
+  <section id="library" class="screen active">
+    <header class="bar">
+      <h1>Narrator</h1>
+      <button id="settingsBtn" class="icon-btn" aria-label="Settings">⚙︎</button>
+    </header>
+
+    <div class="import">
+      <label class="primary-btn">
+        <input id="fileInput" type="file" multiple
+               accept=".epub,.txt,.md,.markdown,.html,.htm,.xhtml,application/epub+zip,text/plain,text/html">
+        + Import books
+      </label>
+      <button id="pasteBtn" class="ghost-btn">Paste text</button>
+      <p class="hint">EPUB, TXT, HTML or Markdown. Your books stay on this device.</p>
+    </div>
+
+    <ul id="bookList" class="book-list"></ul>
+    <p id="emptyMsg" class="empty">No books yet. Import a Royal Road download to get started.</p>
+  </section>
+
+  <!-- PLAYER -->
+  <section id="player" class="screen">
+    <header class="bar">
+      <button id="backBtn" class="icon-btn" aria-label="Back to library">‹</button>
+      <div class="bar-title">
+        <div id="pTitle" class="title"></div>
+        <button id="chapterBtn" class="chapter-btn"></button>
+      </div>
+      <button id="settingsBtn2" class="icon-btn" aria-label="Settings">⚙︎</button>
+    </header>
+
+    <div id="reader" class="reader"></div>
+
+    <div class="controls">
+      <div class="progress">
+        <span id="progText"></span>
+        <span id="sleepText"></span>
+      </div>
+      <input id="seek" type="range" min="0" max="0" value="0" aria-label="Position in chapter">
+      <div class="buttons">
+        <button id="prevCh" class="ctl" aria-label="Previous chapter">⏮</button>
+        <button id="prevP" class="ctl" aria-label="Previous paragraph">↺</button>
+        <button id="playBtn" class="ctl play" aria-label="Play">▶</button>
+        <button id="nextP" class="ctl" aria-label="Next paragraph">↻</button>
+        <button id="nextCh" class="ctl" aria-label="Next chapter">⏭</button>
+      </div>
+      <div class="quick">
+        <button id="rateBtn" class="chip">1.0×</button>
+        <button id="sleepBtn" class="chip">Sleep</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTERS SHEET -->
+  <div id="chapterSheet" class="sheet" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-head"><h2>Chapters</h2><button class="icon-btn close" data-close>✕</button></div>
+      <ul id="chapterList" class="chapter-list"></ul>
+    </div>
+  </div>
+
+  <!-- SETTINGS SHEET -->
+  <div id="settingsSheet" class="sheet" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-head"><h2>Settings</h2><button class="icon-btn close" data-close>✕</button></div>
+      <label class="field">Voice
+        <select id="voiceSel"></select>
+      </label>
+      <label class="field">Speed <span id="rateVal"></span>
+        <input id="rateRange" type="range" min="0.5" max="3" step="0.05">
+      </label>
+      <label class="field">Pitch <span id="pitchVal"></span>
+        <input id="pitchRange" type="range" min="0.5" max="1.5" step="0.05">
+      </label>
+      <label class="toggle"><input id="readHeadings" type="checkbox"> Announce chapter titles</label>
+      <label class="toggle"><input id="keepAlive" type="checkbox"> Keep playing in background (experimental)</label>
+      <label class="toggle"><input id="wakeLock" type="checkbox"> Keep screen on while playing</label>
+      <label class="toggle"><input id="autoScroll" type="checkbox"> Auto-scroll text</label>
+      <label class="toggle"><input id="removeNotices" type="checkbox"> Skip Royal Road “stolen content” notices on import</label>
+      <button id="testVoice" class="ghost-btn">Test voice</button>
+      <p class="hint">More voices: install them in your phone's text-to-speech settings
+        (Android: Settings → Accessibility → Text-to-speech. iPhone: Settings → Accessibility → Spoken Content → Voices),
+        then reload this app.</p>
+      <p class="hint">Narrator <span id="appVersion"></span> · books are stored only on this device.</p>
+    </div>
+  </div>
+
+  <!-- SLEEP SHEET -->
+  <div id="sleepSheet" class="sheet" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-head"><h2>Sleep timer</h2><button class="icon-btn close" data-close>✕</button></div>
+      <div class="sleep-grid">
+        <button class="chip" data-sleep="15">15 min</button>
+        <button class="chip" data-sleep="30">30 min</button>
+        <button class="chip" data-sleep="45">45 min</button>
+        <button class="chip" data-sleep="60">60 min</button>
+        <button class="chip" data-sleep="chapter">End of chapter</button>
+        <button class="chip" data-sleep="off">Off</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASTE SHEET -->
+  <div id="pasteSheet" class="sheet" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-head"><h2>Paste text</h2><button class="icon-btn close" data-close>✕</button></div>
+      <input id="pasteTitle" class="text-in" placeholder="Title">
+      <textarea id="pasteText" class="text-in" rows="10" placeholder="Paste a chapter or a whole story…"></textarea>
+      <button id="pasteSave" class="primary-btn">Add to library</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- tiny silent loop that keeps mobile browsers from suspending speech -->
+  <audio id="keepAliveAudio" loop playsinline preload="auto"></audio>
+
+  <script src="version.js"></script>
+  <script src="vendor/jszip.min.js"></script>
+  <script src="db.js"></script>
+  <script src="parsers.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
