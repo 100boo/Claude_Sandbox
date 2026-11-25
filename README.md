@@ -2,6 +2,8 @@
 
 Turn the stories you download (Royal Road EPUBs, text files, saved web pages) into audiobooks on your phone.
 
+> **This is a public repository.** Don't commit personal information, secrets or book content. Your books live only on your phone, never in this repo.
+
 Narrator is an installable web app (PWA). It reads books aloud with your phone's built-in text-to-speech voices, works offline, and keeps everything on your device. Nothing is uploaded anywhere.
 
 ## Features

@@ -5,3 +5,13 @@ playwright-report/
 .DS_Store
 .env
 .env.*
+
+# Public repo: never commit secrets or personal files
+*.pem
+*.key
+*.p12
+*.keystore
+*.jks
+credentials*.json
+secrets.*
+.npmrc
