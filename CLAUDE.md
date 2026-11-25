@@ -64,7 +64,7 @@ A second, independent PWA for logging trees with photos and location on a person
 
 ## Release / deploy
 
-`main` → GitHub Pages via `.github/workflows/deploy.yml` (deploys `app/` at the root and `trees/` at `/trees/`). CI (`ci.yml`) runs unit + e2e tests on every push and checks that `app/vendor` matches `package.json`.
+`main` → GitHub Pages via `.github/workflows/deploy.yml` (deploys `app/` at the root and `trees/` at `/trees/`). Live at https://100boo.github.io/Claude_Sandbox/ (Grove: https://100boo.github.io/Claude_Sandbox/trees/). The `github-pages` environment only allows deploys from `main`. If a deploy fails within seconds with no step logs, check that environment's deployment-branch rule (Settings → Environments), not the workflow. CI (`ci.yml`) runs unit + e2e tests on every push and checks that `app/vendor` and `trees/vendor` match `package.json`.
 
 ## Roadmap
 
