@@ -1,11 +1,13 @@
-// Render app/icons/icon.svg to the PNG sizes the manifest and iOS need.
-// Usage: npm run icons   (uses the Playwright Chromium)
+// Render <app>/icons/icon.svg to the PNG sizes the manifest and iOS need.
+// Usage: npm run icons [-- trees]   (default: app; uses the Playwright Chromium)
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'app', 'icons');
+const appDir = process.argv[2] || 'app';
+const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', appDir, 'icons');
+const maskBg = appDir === 'trees' ? '#16241b' : '#1b1f2a';
 const svg = await readFile(path.join(dir, 'icon.svg'), 'utf8');
 const browser = await chromium.launch();
 const page = await browser.newPage();
@@ -14,7 +16,7 @@ async function render(size, file, { maskable = false } = {}) {
   await page.setViewportSize({ width: size, height: size });
   // Maskable icons need a full-bleed background and the artwork inside the 80% safe zone.
   const inner = maskable ? Math.round(size * 0.8) : size;
-  const html = `<html><body style="margin:0;display:grid;place-items:center;width:${size}px;height:${size}px;background:${maskable ? '#1b1f2a' : 'transparent'}">
+  const html = `<html><body style="margin:0;display:grid;place-items:center;width:${size}px;height:${size}px;background:${maskable ? maskBg : 'transparent'}">
     <div style="width:${inner}px;height:${inner}px">${svg.replace('<svg ', `<svg width="${inner}" height="${inner}" `)}</div></body></html>`;
   await page.setContent(html);
   await page.screenshot({ path: path.join(dir, file), omitBackground: !maskable });

@@ -1,4 +1,4 @@
-// Zero-dependency static server for app/. Usage: npm run dev [-- --port 8080]
+// Zero-dependency static server for app/ (or trees/). Usage: npm run dev [-- --port 8080] [--root trees]
 // Prints a LAN URL too, so you can open it on your phone (same Wi-Fi).
 // Note: service workers and some speech features need HTTPS on non-localhost origins,
 // so on a phone the deployed GitHub Pages URL is the realistic test.
@@ -8,7 +8,9 @@ import { networkInterfaces } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'app');
+const repo = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const rootArg = process.argv.indexOf('--root');
+const defaultRoot = rootArg > -1 ? process.argv[rootArg + 1] : 'app';
 const portArg = process.argv.indexOf('--port');
 const port = Number(portArg > -1 ? process.argv[portArg + 1] : process.env.PORT || 8080);
 
@@ -18,7 +20,8 @@ const TYPES = {
   '.epub': 'application/epub+zip', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8',
 };
 
-export function createServer() {
+export function createServer(dir = defaultRoot) {
+  const root = path.join(repo, dir);
   return http.createServer(async (req, res) => {
     try {
       let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
@@ -36,7 +39,7 @@ export function createServer() {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   createServer().listen(port, () => {
-    console.log(`Narrator dev server: http://localhost:${port}/`);
+    console.log(`Dev server for ${defaultRoot}/: http://localhost:${port}/`);
     for (const list of Object.values(networkInterfaces())) {
       for (const a of list || []) if (a.family === 'IPv4' && !a.internal) console.log(`  on your network: http://${a.address}:${port}/`);
     }

@@ -1,4 +1,4 @@
-# Publishes app/ to GitHub Pages on every push to main.
+# Publishes app/ (Narrator, at the site root) and trees/ (Grove, at /trees/) to GitHub Pages on every push to main.
 # One-time setup: repo Settings → Pages → Source: "GitHub Actions".
 name: Deploy to GitHub Pages
 
@@ -25,8 +25,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -r app/. _site/
+          cp -r trees _site/trees
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: app
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

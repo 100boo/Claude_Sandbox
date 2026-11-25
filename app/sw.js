@@ -33,6 +33,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  // Grove (trees/) is a separate app deployed alongside, with its own service worker.
+  if (url.pathname.startsWith(new URL('trees/', self.registration.scope).pathname)) return;
 
   if (event.request.method === 'POST' && url.pathname.endsWith('/share-target')) {
     event.respondWith(handleShare(event.request));

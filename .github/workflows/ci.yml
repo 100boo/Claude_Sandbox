@@ -28,4 +28,4 @@ jobs:
       - name: Vendored libraries match package.json
         run: |
           npm run vendor
-          git diff --exit-code app/vendor || (echo "app/vendor is out of date: run 'npm run vendor' and commit" && exit 1)
+          git diff --exit-code app/vendor trees/vendor || (echo "vendored files are out of date: run 'npm run vendor' and commit" && exit 1)

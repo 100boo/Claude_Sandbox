@@ -58,9 +58,13 @@ sw.js       stale-while-revalidate cache named narrator-<APP_VERSION>; POST ./sh
 - `tests/helpers/epub.mjs` `makeEpub()` builds Royal Road-shaped EPUBs (one chapter per file, nav + NCX). Extend it rather than committing binary fixtures.
 - Service workers are blocked in most e2e contexts. The offline test enables them explicitly.
 
+## Grove (`trees/`)
+
+A second, independent PWA for logging trees with photos and location on a personal map. See `trees/README.md`. Same ground rules (no build step, vendored libs, bump `trees/version.js`, add files to its `sw.js` `SHELL`). Pure helpers live in `trees/geo.js` (UMD, unit-tested), and storage in `trees/db.js` (IndexedDB `grove`). Never commit real photos or real coordinates; `tests/helpers/exif.mjs` builds synthetic EXIF.
+
 ## Release / deploy
 
-`main` → GitHub Pages via `.github/workflows/deploy.yml` (deploys `app/`). CI (`ci.yml`) runs unit + e2e tests on every push and checks that `app/vendor` matches `package.json`.
+`main` → GitHub Pages via `.github/workflows/deploy.yml` (deploys `app/` at the root and `trees/` at `/trees/`). CI (`ci.yml`) runs unit + e2e tests on every push and checks that `app/vendor` matches `package.json`.
 
 ## Roadmap
 

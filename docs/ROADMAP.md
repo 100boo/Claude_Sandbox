@@ -21,4 +21,5 @@ Priorities come from the core goal: listen to Royal Road serials for hours, scre
 
 ## Done
 
+- **0.1.1:** Service worker leaves `/trees/` (Grove) alone.
 - **0.1.0:** PWA with EPUB/TXT/HTML/Markdown import, paste text, chapter detection, Royal Road anti-piracy notice filter, paragraph-level resume, serial re-import keeps position, speed/voice/pitch, sleep timer, Media Session controls, background keep-alive (Android), wake lock option, offline service worker, Android share target, desktop file handler.
