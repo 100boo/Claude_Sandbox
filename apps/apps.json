@@ -3,6 +3,14 @@
     "id": "narrator",
     "name": "Narrator",
     "description": "Listen to downloaded books (EPUB, TXT, HTML) read aloud.",
-    "icon": "narrator/icons/icon-192.png"
+    "icon": "narrator/icons/icon-192.png",
+    "cachePrefix": "sandbox/narrator/"
+  },
+  {
+    "id": "trees",
+    "name": "Grove",
+    "description": "Log trees you find with photos and location, on a map of where you've explored.",
+    "icon": "trees/icons/icon-192.png",
+    "cachePrefix": "grove-"
   }
 ]

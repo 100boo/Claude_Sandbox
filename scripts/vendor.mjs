@@ -6,7 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // [app, file in node_modules, name in apps/<app>/vendor/]
-const files = [['narrator', 'jszip/dist/jszip.min.js', 'jszip.min.js']];
+const files = [
+  ['narrator', 'jszip/dist/jszip.min.js', 'jszip.min.js'],
+  ['trees', 'leaflet/dist/leaflet.js', 'leaflet.js'],
+  ['trees', 'leaflet/dist/leaflet.css', 'leaflet.css'],
+];
 for (const [app, from, to] of files) {
   const out = path.join(here, '..', 'apps', app, 'vendor');
   await mkdir(out, { recursive: true });

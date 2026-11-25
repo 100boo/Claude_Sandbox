@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16241b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Grove">
+  <title>Grove</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="map" aria-label="Map of places you have explored"></div>
+
+  <header class="topbar">
+    <h1>Grove</h1>
+    <p id="stats" class="stats">Nothing logged yet</p>
+    <button id="menuBtn" class="icon-btn" aria-label="Menu">☰</button>
+  </header>
+
+  <div id="pickBanner" class="banner" hidden>
+    <span>Tap the map where the tree is</span>
+    <button id="pickCancel" class="ghost-btn small">Cancel</button>
+  </div>
+
+  <div class="fabs">
+    <button id="locateBtn" class="round-btn" aria-label="Show my location">◎</button>
+    <button id="listBtn" class="round-btn" aria-label="List of entries">☷</button>
+    <button id="logBtn" class="primary-btn">+ Log a tree</button>
+  </div>
+
+  <!-- LOG / EDIT -->
+  <dialog id="logSheet" class="sheet">
+    <form id="logForm" method="dialog">
+      <header class="sheet-head">
+        <h2 id="logTitle">Log a tree</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </header>
+
+      <div id="photoStrip" class="photo-strip"></div>
+      <div class="row">
+        <label class="ghost-btn">
+          <input id="cameraInput" type="file" accept="image/*" capture="environment">
+          📷 Take photo
+        </label>
+        <label class="ghost-btn">
+          <input id="photoInput" type="file" accept="image/*" multiple>
+          🖼 Choose photos
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Tree</span>
+        <input id="speciesInput" list="speciesList" autocomplete="off" placeholder="e.g. Oak, or leave blank">
+        <datalist id="speciesList"></datalist>
+      </label>
+
+      <label class="field">
+        <span>Notes</span>
+        <textarea id="notesInput" rows="2" placeholder="Optional"></textarea>
+      </label>
+
+      <div class="field">
+        <span>Location</span>
+        <p id="locText" class="loc-text">Getting your location…</p>
+        <div class="row">
+          <button type="button" id="locHereBtn" class="ghost-btn small">Use my location</button>
+          <button type="button" id="locPickBtn" class="ghost-btn small">Pick on map</button>
+        </div>
+      </div>
+
+      <button id="saveBtn" type="submit" class="primary-btn wide" disabled>Save</button>
+    </form>
+  </dialog>
+
+  <!-- DETAIL -->
+  <dialog id="detailSheet" class="sheet">
+    <header class="sheet-head">
+      <h2 id="detailTitle"></h2>
+      <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+    </header>
+    <div id="detailPhotos" class="detail-photos"></div>
+    <p id="detailMeta" class="muted"></p>
+    <p id="detailNotes" class="notes"></p>
+    <div class="row">
+      <button id="editBtn" class="ghost-btn">Edit</button>
+      <button id="deleteBtn" class="ghost-btn danger">Delete</button>
+    </div>
+  </dialog>
+
+  <!-- LIST -->
+  <dialog id="listSheet" class="sheet">
+    <header class="sheet-head">
+      <h2>Your trees</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+    </header>
+    <input id="filterInput" type="search" class="search" placeholder="Filter by tree or note">
+    <ul id="entryList" class="entry-list"></ul>
+    <p id="emptyMsg" class="muted center">Nothing logged yet. Tap “Log a tree” when you find one.</p>
+  </dialog>
+
+  <!-- MENU -->
+  <dialog id="menuSheet" class="sheet">
+    <header class="sheet-head">
+      <h2>Grove</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+    </header>
+    <label class="switch"><input id="fogToggle" type="checkbox"> Fog over unexplored areas</label>
+    <label class="field">
+      <span>Explored radius around each tree: <b id="radiusVal"></b></span>
+      <input id="radiusInput" type="range" min="50" max="1000" step="50">
+    </label>
+    <div class="row">
+      <button id="exportBtn" class="ghost-btn">Export backup</button>
+      <label class="ghost-btn">
+        <input id="importInput" type="file" accept=".json,application/json">
+        Import backup
+      </label>
+    </div>
+    <p class="muted small">Photos and locations are stored only on this device. The map background is loaded from OpenStreetMap, which sees which area you are viewing. Export a backup now and then so you don't lose your trees.</p>
+    <p class="muted small">Version <span id="versionText"></span></p>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="version.js"></script>
+  <script src="vendor/leaflet.js"></script>
+  <script src="geo.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

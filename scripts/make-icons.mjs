@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const appName = process.argv[2] || 'narrator';
+// Full-bleed background for maskable / iOS icons, per app.
+const maskBg = { narrator: '#1b1f2a', trees: '#16241b' }[appName] || '#1b1f2a';
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'apps', appName, 'icons');
 const svg = await readFile(path.join(dir, 'icon.svg'), 'utf8');
 const browser = await chromium.launch();
@@ -15,7 +17,7 @@ async function render(size, file, { maskable = false } = {}) {
   await page.setViewportSize({ width: size, height: size });
   // Maskable icons need a full-bleed background and the artwork inside the 80% safe zone.
   const inner = maskable ? Math.round(size * 0.8) : size;
-  const html = `<html><body style="margin:0;display:grid;place-items:center;width:${size}px;height:${size}px;background:${maskable ? '#1b1f2a' : 'transparent'}">
+  const html = `<html><body style="margin:0;display:grid;place-items:center;width:${size}px;height:${size}px;background:${maskable ? maskBg : 'transparent'}">
     <div style="width:${inner}px;height:${inner}px">${svg.replace('<svg ', `<svg width="${inner}" height="${inner}" `)}</div></body></html>`;
   await page.setContent(html);
   await page.screenshot({ path: path.join(dir, file), omitBackground: !maskable });

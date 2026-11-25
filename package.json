@@ -17,6 +17,7 @@
   "devDependencies": {
     "jsdom": "^26.1.0",
     "jszip": "3.10.1",
+    "leaflet": "1.9.4",
     "playwright": "1.63.0"
   }
 }

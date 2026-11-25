@@ -9,6 +9,7 @@ Small apps built with Claude, each one installable on a phone's home screen stra
 | App | What it does | Link |
 |---|---|---|
 | Narrator | Listen to downloaded books (EPUB, TXT, HTML) read aloud | [open](https://100boo.github.io/Claude_Sandbox/narrator/) · [docs](apps/narrator/README.md) |
+| Grove | Log trees with photos and location on a map of where you've explored | [open](https://100boo.github.io/Claude_Sandbox/trees/) · [docs](apps/trees/README.md) |
 
 ## Put an app on your iPhone home screen
 
@@ -22,7 +23,7 @@ Add each app from its own page, not from the launcher, so the icon opens that ap
 
 ```bash
 npm install
-npm run dev        # all apps at http://localhost:8080 (launcher at /, Narrator at /narrator/)
+npm run dev        # all apps at http://localhost:8080 (launcher at /, then /narrator/, /trees/)
 npm test           # unit tests
 npm run test:e2e   # browser tests at phone size (run `npx playwright install chromium` once)
 ```
