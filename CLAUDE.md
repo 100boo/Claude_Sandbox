@@ -60,7 +60,7 @@ sw.js       stale-while-revalidate cache named narrator-<APP_VERSION>; POST ./sh
 
 ## Release / deploy
 
-`main` → GitHub Pages via `.github/workflows/deploy.yml` (deploys `app/`). CI (`ci.yml`) runs unit + e2e tests on every push and checks that `app/vendor` matches `package.json`.
+`main` → GitHub Pages via `.github/workflows/deploy.yml` (deploys `app/`). Live at https://100boo.github.io/Claude_Sandbox/. The `github-pages` environment only allows deploys from `main`. If a deploy fails within seconds with no step logs, check that environment's deployment-branch rule (Settings → Environments), not the workflow. CI (`ci.yml`) runs unit + e2e tests on every push and checks that `app/vendor` matches `package.json`.
 
 ## Roadmap
 
