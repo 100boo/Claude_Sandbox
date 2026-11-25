@@ -71,8 +71,16 @@
   <!-- CHAPTERS SHEET -->
   <div id="chapterSheet" class="sheet" hidden>
     <div class="sheet-panel">
-      <div class="sheet-head"><h2>Chapters</h2><button class="icon-btn close" data-close>✕</button></div>
+      <div class="sheet-sticky">
+        <div class="sheet-head"><h2>Chapters</h2><button class="icon-btn close" data-close>✕</button></div>
+        <input id="chapterSearch" class="text-in search-in" type="search" inputmode="search" enterkeyhint="search"
+               autocomplete="off" autocorrect="off" spellcheck="false"
+               placeholder="Chapter number, title, or words in the text" aria-label="Search chapters and text">
+      </div>
       <ul id="chapterList" class="chapter-list"></ul>
+      <p id="searchEmpty" class="hint" hidden>No matches.</p>
+      <h3 id="textHitsHead" class="list-head" hidden>In the text</h3>
+      <ul id="textHits" class="chapter-list hits"></ul>
     </div>
   </div>
 
@@ -136,6 +144,7 @@
   <script src="vendor/jszip.min.js"></script>
   <script src="db.js"></script>
   <script src="parsers.js"></script>
+  <script src="search.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

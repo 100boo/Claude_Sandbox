@@ -226,6 +226,7 @@
     if (!meta || !content) return toast('Book not found');
     stop();
     chunkCache.clear();
+    searchCache = [];
     state.meta = meta;
     state.chapters = content.chapters;
     state.ch = Math.min(meta.pos.ch, content.chapters.length - 1);
@@ -640,22 +641,67 @@
 
   // ------------------------------------------------------------- chapters
 
-  $('chapterBtn').addEventListener('click', () => {
+  let searchCache = [];   // folded paragraph text per chapter, reset when a book opens
+  let searchTimer = 0;
+
+  function chapterItem(i, label, sub) {
+    const li = document.createElement('li');
+    if (i === state.ch) li.className = 'cur';
+    const name = document.createElement('span');
+    name.textContent = label;
+    const small = document.createElement('small');
+    small.textContent = sub;
+    li.append(name, small);
+    li.addEventListener('click', () => { closeSheets(); goto(i, 0, { titleDone: false }); });
+    return li;
+  }
+
+  function renderChapterSearch(query) {
+    const q = (query || '').trim();
+    const titles = state.chapters.map((c) => c.title);
     const list = $('chapterList');
     list.textContent = '';
-    state.chapters.forEach((c, i) => {
+    for (const i of Search.matchChapters(titles, q)) {
+      list.appendChild(chapterItem(i, `${i + 1}. ${titles[i]}`, `${state.chapters[i].paras.length} ¶`));
+    }
+
+    const hitsEl = $('textHits');
+    hitsEl.textContent = '';
+    const hits = q ? Search.searchText(state.chapters, q, { cache: searchCache }) : [];
+    for (const h of hits) {
       const li = document.createElement('li');
-      if (i === state.ch) li.className = 'cur';
-      const name = document.createElement('span');
-      name.textContent = `${i + 1}. ${c.title}`;
-      const small = document.createElement('small');
-      small.textContent = `${c.paras.length} ¶`;
-      li.append(name, small);
-      li.addEventListener('click', () => { closeSheets(); goto(i, 0, { titleDone: false }); });
-      list.appendChild(li);
-    });
+      const where = document.createElement('small');
+      where.textContent = `Ch ${h.ch + 1} · ${titles[h.ch]}`;
+      const text = document.createElement('span');
+      const mark = document.createElement('mark');
+      mark.textContent = h.match;
+      text.append(h.before, mark, h.after);
+      li.append(where, text);
+      li.addEventListener('click', () => { closeSheets(); goto(h.ch, h.p, { titleDone: true }); });
+      hitsEl.appendChild(li);
+    }
+    $('textHitsHead').hidden = hits.length === 0;
+    $('textHitsHead').textContent = hits.length >= 50 ? 'In the text (first 50)' : 'In the text';
+    $('searchEmpty').hidden = !q || list.children.length + hits.length > 0;
+  }
+
+  $('chapterSearch').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => renderChapterSearch(e.target.value), 150);
+  });
+  $('chapterSearch').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    clearTimeout(searchTimer);
+    renderChapterSearch(e.target.value);
+    e.target.blur(); // hide the iPhone keyboard so results are visible
+  });
+
+  $('chapterBtn').addEventListener('click', () => {
+    $('chapterSearch').value = '';
+    renderChapterSearch('');
     openSheet('chapterSheet');
-    const cur = list.querySelector('.cur');
+    const cur = $('chapterList').querySelector('.cur');
     if (cur) cur.scrollIntoView({ block: 'center' });
   });
 

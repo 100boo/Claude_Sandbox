@@ -21,6 +21,7 @@ Priorities come from the core goal: listen to Royal Road serials for hours, scre
 
 ## Done
 
+- **0.2.0:** search in the chapter list: jump by chapter number, chapter title, or any words in the book's text.
 - **0.1.2:** moved to `/narrator/` in the multi-app sandbox; service-worker caches namespaced per app (`sandbox/narrator/…`) and only its own are ever deleted.
 - **0.1.1:** (at the site root) service worker leaves `/trees/` (Grove) alone.
 - **0.1.0:** PWA with EPUB/TXT/HTML/Markdown import, paste text, chapter detection, Royal Road anti-piracy notice filter, paragraph-level resume, serial re-import keeps position, speed/voice/pitch, sleep timer, Media Session controls, background keep-alive (Android), wake lock option, offline service worker, Android share target, desktop file handler.

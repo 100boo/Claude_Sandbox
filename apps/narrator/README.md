@@ -10,6 +10,7 @@ Narrator is an installable web app (PWA). It reads books aloud with your phone's
 
 - **Formats:** EPUB, TXT, HTML and Markdown. You can also paste text directly.
 - **Chapters:** detected from the EPUB table of contents, headings, or "Chapter 12…" lines in plain text.
+- **Search:** in the chapter list, type a chapter number, part of a title, or any words from the story to jump straight there.
 - **Remembers your place** in every book, down to the paragraph.
 - **Serial-friendly:** re-import an updated download of a story you're following and it adds the new chapters without losing your place.
 - **Royal Road cleanup:** skips the hidden "this story was stolen from Royal Road" notices that end up in downloaded chapters, and scene-break lines like `* * *`.

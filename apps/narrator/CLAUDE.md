@@ -15,6 +15,7 @@ The sandbox-wide rules in the root `CLAUDE.md` apply too, including **the repo i
 
 ```
 parsers.js  pure: file -> { title, author, format, cover, chapters: [{ title, paras: [string] }] }
+search.js   pure: chapter matching (number/title) and full-text search with snippets
 db.js       IndexedDB: meta (small, listed), content (chapters, loaded on open), inbox (share target)
 app.js      UI + playback; exposes window.Narrator for debugging/tests
 sw.js       stale-while-revalidate cache named sandbox/narrator/<APP_VERSION>; POST ./share-target -> inbox

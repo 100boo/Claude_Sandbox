@@ -137,6 +137,42 @@ test('re-importing a serial with new chapters updates it and keeps your place', 
   assert.match(await page.locator('.book').innerText(), /Ch 2 of 5/);
 });
 
+test('chapter search jumps by number, title and text', async () => {
+  const spec = story(12);
+  spec.chapters[8].paras.push('The lighthouse keeper had a secret nobody guessed.');
+  await importEpub(spec);
+  await page.locator('.book').click();
+
+  await page.locator('#chapterBtn').click();
+  const search = page.locator('#chapterSearch');
+  // By number: "9" puts chapter 9 first.
+  await search.fill('9');
+  await page.locator('#chapterList li').first().filter({ hasText: '9. Chapter 9' }).waitFor();
+  await page.locator('#chapterList li').first().click();
+  await page.locator('#chapterBtn', { hasText: /^9\/12/ }).waitFor();
+
+  // By text: find a phrase and land on that paragraph.
+  await page.locator('#chapterBtn').click();
+  assert.equal(await search.inputValue(), '', 'search box resets each time');
+  await search.fill('lighthouse keeper');
+  const hit = page.locator('#textHits li', { hasText: 'Ch 9' });
+  await hit.waitFor();
+  assert.equal(await hit.locator('mark').innerText(), 'lighthouse keeper');
+  await page.locator('#chapterSheet [data-close]').click();
+  await page.locator('#nextCh').click(); // move away first so the jump is real
+  await page.locator('#chapterBtn', { hasText: /^10\/12/ }).waitFor();
+  await page.locator('#chapterBtn').click();
+  await search.fill('lighthouse keeper');
+  await page.locator('#textHits li', { hasText: 'Ch 9' }).click();
+  await page.locator('#chapterBtn', { hasText: /^9\/12/ }).waitFor();
+  assert.equal(await page.locator('#reader p.cur').innerText(), 'The lighthouse keeper had a secret nobody guessed.');
+
+  // No matches.
+  await page.locator('#chapterBtn').click();
+  await search.fill('zzzqqq');
+  await page.locator('#searchEmpty').waitFor();
+});
+
 test('tapping a paragraph starts reading from there', async () => {
   await importEpub(story(1));
   await page.locator('.book').click();

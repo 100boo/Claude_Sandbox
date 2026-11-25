@@ -148,7 +148,16 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .field input[type=range] { accent-color: var(--accent); }
 .toggle { display: flex; gap: 10px; align-items: center; }
 .toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+.sheet-sticky {
+  position: sticky; top: -8px; z-index: 1; background: var(--panel);
+  margin: -8px -16px 0; padding: 8px 16px 10px; display: flex; flex-direction: column; gap: 8px;
+}
+.search-in { font-size: 16px; } /* 16px+ stops iOS zooming in on focus */
+.list-head { margin: 8px 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .chapter-list { list-style: none; margin: 0; padding: 0; }
+.chapter-list.hits li { display: block; }
+.chapter-list.hits li small { display: block; margin-bottom: 2px; }
+.hits mark { background: var(--hl); color: inherit; box-shadow: inset 0 -2px 0 var(--accent); border-radius: 2px; }
 .chapter-list li {
   padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer;
   display: flex; justify-content: space-between; gap: 10px;

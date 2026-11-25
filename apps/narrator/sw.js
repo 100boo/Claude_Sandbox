@@ -12,6 +12,7 @@ const SHELL = [
   'version.js',
   'db.js',
   'parsers.js',
+  'search.js',
   'app.js',
   'vendor/jszip.min.js',
   'manifest.webmanifest',
