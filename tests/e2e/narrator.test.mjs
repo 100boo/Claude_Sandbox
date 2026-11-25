@@ -18,6 +18,18 @@ const FAKE_TTS = () => {
     speak(u) {
       current = u;
       synth.speaking = true;
+      if (window.__interruptNext > 0) {
+        // Simulate the OS cutting speech off (seen on iPhone): start, then 'interrupted'.
+        window.__interruptNext--;
+        setTimeout(() => {
+          if (current !== u) return;
+          fire(u, 'start');
+          current = null;
+          synth.speaking = false;
+          fire(u, 'error', { error: 'interrupted' });
+        }, 5);
+        return;
+      }
       setTimeout(() => {
         if (current !== u) return;
         fire(u, 'start');
@@ -171,6 +183,46 @@ test('chapter search jumps by number, title and text', async () => {
   await page.locator('#chapterBtn').click();
   await search.fill('zzzqqq');
   await page.locator('#searchEmpty').waitFor();
+});
+
+test('recovers when the OS interrupts speech instead of going quiet', async () => {
+  await importEpub(story(1));
+  await page.locator('.book').click();
+  await page.evaluate(() => { window.__interruptNext = 3; });
+  await page.locator('#playBtn').click();
+  await waitSpoken('Chapter 1 paragraph three.');
+  assert.deepEqual(await spoken(), ['Chapter 1', 'Chapter 1 paragraph one.', 'Chapter 1 paragraph two.', 'Chapter 1 paragraph three.']);
+  await page.locator('#settingsBtn2').click();
+  const logText = await page.locator('#logView').textContent();
+  assert.match(logText, /error interrupted/);
+  assert.match(logText, /retrying interrupted chunk/);
+});
+
+test('stops with a clear message if speech is interrupted over and over', async () => {
+  await importEpub(story(1));
+  await page.locator('.book').click();
+  await page.evaluate(() => { window.__interruptNext = 100; });
+  await page.locator('#playBtn').click();
+  await page.locator('#toast', { hasText: 'keeps getting interrupted' }).waitFor({ timeout: 15000 });
+  assert.equal(await page.locator('#playBtn').getAttribute('aria-label'), 'Play');
+});
+
+test('on iPhone the silent background sound is never started', async () => {
+  const ctx = await browser.newContext({ ...devices['iPhone 15'], serviceWorkers: 'block' });
+  await ctx.addInitScript(FAKE_TTS);
+  const p = await ctx.newPage();
+  try {
+    await p.goto(base);
+    await p.setInputFiles('#fileInput', { name: 's.epub', mimeType: 'application/epub+zip', buffer: await makeEpub(story(1)) });
+    await p.locator('.book').click();
+    await p.locator('#playBtn').click();
+    await p.waitForFunction(() => window.__spoken.length >= 2);
+    assert.equal(await p.evaluate(() => document.getElementById('keepAliveAudio').paused), true);
+    assert.equal(await p.evaluate(() => !document.getElementById('keepAliveAudio').src), true);
+    assert.equal(await p.locator('#keepAliveRow').isHidden(), true);
+  } finally {
+    await ctx.close();
+  }
 });
 
 test('tapping a paragraph starts reading from there', async () => {

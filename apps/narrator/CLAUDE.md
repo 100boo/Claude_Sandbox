@@ -31,7 +31,9 @@ sw.js       stale-while-revalidate cache named sandbox/narrator/<APP_VERSION>; P
 - Every start, stop or seek increments `state.token`. A loop exits as soon as its token is stale. **Never await speech without checking the token afterwards.**
 - Pause is implemented as `cancel()` plus restarting the current chunk. `speechSynthesis.pause()` is unreliable on Android.
 - `speakChunk` has a watchdog for engines that never fire `onend`, and the loop stops after 4 consecutive "silent" utterances so a broken engine can't fast-skip through a book.
-- Background playback: a looping near-silent WAV (`#keepAliveAudio`) keeps Android treating the page as media and enables Media Session controls. On `visibilitychange` → visible, the loop restarts if the OS killed speech.
+- Background playback: a looping near-silent WAV (`#keepAliveAudio`) keeps Android treating the page as media and enables Media Session controls. **Never on iOS** (`IS_IOS`): there it competes with speech for the audio session and cut the voice off about a second in (owner's report, 0.2.1). On `visibilitychange` → visible, the loop restarts if the OS killed speech.
+- An `interrupted`/`canceled` error we didn't cause (token still current) is retried up to 5 times with backoff, then playback stops with a toast. Never let the loop exit silently while `state.playing` is true.
+- `log()` records playback events (start/end/error with timings, stop reasons, media keys, visibility) into an in-memory ring buffer shown in Settings → Playback log, with a Copy button. **Ask the owner for this log first** when they report device-specific playback problems; the e2e fake can't reproduce real engines.
 
 ## Conventions
 

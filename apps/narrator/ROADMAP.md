@@ -21,6 +21,7 @@ Priorities come from the core goal: listen to Royal Road serials for hours, scre
 
 ## Done
 
+- **0.2.1:** iPhone fix: no silent background sound on iOS (it cut speech off after a second); interrupted speech is retried instead of going quiet; Settings → Playback log for troubleshooting.
 - **0.2.0:** search in the chapter list: jump by chapter number, chapter title, or any words in the book's text.
 - **0.1.2:** moved to `/narrator/` in the multi-app sandbox; service-worker caches namespaced per app (`sandbox/narrator/…`) and only its own are ever deleted.
 - **0.1.1:** (at the site root) service worker leaves `/trees/` (Grove) alone.

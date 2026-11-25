@@ -59,6 +59,19 @@
     toastTimer = setTimeout(() => { el.hidden = true; }, ms || 2800);
   }
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // iPhone/iPad (iPadOS reports itself as a Mac with a touch screen).
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  /** Recent playback events, shown in Settings → Playback log, for diagnosing device-specific speech problems. */
+  const playLog = [];
+  function log(msg) {
+    const t = new Date();
+    const stamp = `${String(t.getMinutes()).padStart(2, '0')}:${String(t.getSeconds()).padStart(2, '0')}.${String(t.getMilliseconds()).padStart(3, '0')}`;
+    playLog.push(`${stamp} ${msg}`);
+    if (playLog.length > 300) playLog.shift();
+  }
   const norm = (s) => String(s || '').trim().toLowerCase();
 
   function bookProgress(meta) {
@@ -224,7 +237,7 @@
   async function openBook(id) {
     const [meta, content] = await Promise.all([DB.getMeta(id), DB.getContent(id)]);
     if (!meta || !content) return toast('Book not found');
-    stop();
+    stop('opened a book');
     chunkCache.clear();
     searchCache = [];
     state.meta = meta;
@@ -354,16 +367,23 @@
         clearInterval(watch);
         resolve(r);
       };
-      u.onstart = () => { started = true; };
-      u.onend = () => finish(started ? 'ok' : 'silent');
+      const ms = () => `${Date.now() - t0}ms`;
+      u.onstart = () => { started = true; log(`start "${text.slice(0, 40)}"`); };
+      u.onend = () => { log(`end ${ms()}${started ? '' : ' (never started)'}`); finish(started ? 'ok' : 'silent'); };
       u.onerror = (e) => {
         const code = e.error || 'unknown';
-        finish(code === 'interrupted' || code === 'canceled' ? 'stopped' : 'error:' + code);
+        log(`error ${code} after ${ms()}`);
+        if (token !== state.token) return finish('stopped'); // we cancelled it ourselves
+        // Cut off by something else (the OS, another sound): the caller retries the chunk.
+        finish(code === 'interrupted' || code === 'canceled' ? 'interrupted' : 'error:' + code);
       };
-      // Watchdog: some Android engines occasionally never fire onend.
+      // Watchdog: some engines occasionally never fire onend.
       const watch = setInterval(() => {
         if (token !== state.token) return finish('stopped');
-        if (Date.now() - t0 > 2500 && !synth.speaking && !synth.pending) finish(started ? 'ok' : 'silent');
+        if (Date.now() - t0 > 2500 && !synth.speaking && !synth.pending) {
+          log(`watchdog: engine idle after ${ms()}${started ? '' : ', never started'}`);
+          finish(started ? 'ok' : 'silent');
+        }
       }, 500);
       liveUtterance = u;
       synth.speak(u);
@@ -385,19 +405,34 @@
     synth.cancel();
     await sleep(80); // Chrome drops a speak() issued immediately after cancel()
     let silentRun = 0;
+    let interruptRun = 0;
 
     const say = async (text) => {
-      const r = await speakChunk(text, token);
+      let r = await speakChunk(text, token);
+      // Retry a chunk the OS cut off, rather than going quiet while still "playing".
+      while (r === 'interrupted' && token === state.token && interruptRun < 5) {
+        interruptRun++;
+        log(`retrying interrupted chunk (${interruptRun})`);
+        await sleep(250 * interruptRun);
+        if (token !== state.token) return false;
+        r = await speakChunk(text, token);
+      }
       if (token !== state.token || r === 'stopped') return false;
+      if (r === 'interrupted') {
+        stop('kept being interrupted');
+        toast('Speech keeps getting interrupted. Open Settings → Playback log and send it to Claude.', 6000);
+        return false;
+      }
+      interruptRun = 0;
       if (r.startsWith('error:')) {
         const code = r.slice(6);
-        stop();
+        stop('speech error ' + code);
         toast(code === 'not-allowed' ? 'Tap play to start speech' : `Speech error: ${code}`, 4000);
         return false;
       }
       silentRun = r === 'silent' ? silentRun + 1 : 0;
       if (silentRun >= 4) {
-        stop();
+        stop('engine silent');
         toast('The speech engine is not responding. Try another voice in Settings.', 5000);
         return false;
       }
@@ -431,12 +466,12 @@
       if (state.sleepAtChapterEnd) {
         clearSleep();
         goto(Math.min(state.ch + 1, state.chapters.length - 1), 0);
-        stop();
+        stop('sleep timer: end of chapter');
         toast('Sleep timer: stopped at end of chapter');
         return;
       }
       if (state.ch + 1 >= state.chapters.length) {
-        stop();
+        stop('end of book');
         toast('The end — you finished the book 🎉', 5000);
         return;
       }
@@ -456,14 +491,16 @@
     if (!synth) return toast('This browser has no text-to-speech support');
     if (!state.chapters) return;
     state.playing = true;
+    log(`play ch${state.ch + 1} p${state.p + 1} rate ${settings.rate} voice ${settings.voiceURI || 'default'}`);
     updatePlayButton();
     startKeepAlive();
     requestWakeLock();
     playLoop();
   }
 
-  function stop() {
+  function stop(reason) {
     const wasPlaying = state.playing;
+    if (wasPlaying) log(`stop (${typeof reason === 'string' ? reason : 'pause button'})`);
     state.playing = false;
     state.token++;
     if (synth) synth.cancel();
@@ -517,7 +554,7 @@
   $('prevCh').addEventListener('click', prevChapter);
   $('seek').addEventListener('change', (e) => goto(state.ch, Number(e.target.value)));
   $('backBtn').addEventListener('click', async () => {
-    stop();
+    stop('back to library');
     await savePos(true);
     show('library');
     renderLibrary();
@@ -544,7 +581,9 @@
     return silentUrl;
   }
   function startKeepAlive() {
-    if (!settings.keepAlive) return;
+    // On iPhone the silent loop competes with speech for the audio session and can cut the
+    // voice off, and iOS suspends web speech with the screen off regardless. Android only.
+    if (!settings.keepAlive || IS_IOS) return;
     const a = $('keepAliveAudio');
     if (!a.src) a.src = silentWavUrl();
     a.volume = 0.01;
@@ -563,11 +602,12 @@
   function releaseWakeLock() { if (wakeLock) wakeLock.release().catch(() => {}); wakeLock = null; }
 
   document.addEventListener('visibilitychange', () => {
+    log(`app ${document.visibilityState}`);
     if (document.visibilityState === 'hidden') { savePos(true); return; }
     if (state.playing) {
       requestWakeLock();
       // If the OS killed speech while we were in the background, pick it back up.
-      if (!synth.speaking && !synth.pending) playLoop();
+      if (!synth.speaking && !synth.pending) { log('resuming after background'); playLoop(); }
     }
   });
   window.addEventListener('pagehide', () => savePos(true));
@@ -587,9 +627,9 @@
   if ('mediaSession' in navigator) {
     const ms = navigator.mediaSession;
     const set = (a, fn) => { try { ms.setActionHandler(a, fn); } catch (e) { /* unsupported action */ } };
-    set('play', play);
-    set('pause', stop);
-    set('stop', stop);
+    set('play', () => { log('media key: play'); play(); });
+    set('pause', () => stop('media key / lock screen pause'));
+    set('stop', () => stop('media key / lock screen stop'));
     set('previoustrack', prevChapter);
     set('nexttrack', nextChapter);
     set('seekbackward', prevPara);
@@ -627,7 +667,7 @@
   function checkSleepTimer() {
     if (state.sleepUntil && Date.now() >= state.sleepUntil) {
       clearSleep();
-      stop();
+      stop('sleep timer');
       toast('Sleep timer: playback stopped');
       return true;
     }
@@ -722,8 +762,26 @@
     if (restartSpeech && state.playing) playLoop(); // re-speak current chunk with new voice/rate
   }
 
-  $('settingsBtn').addEventListener('click', () => openSheet('settingsSheet'));
-  $('settingsBtn2').addEventListener('click', () => openSheet('settingsSheet'));
+  function openSettings() {
+    $('logView').textContent = playLog.length ? playLog.join('\n') : 'Nothing yet. Play a book first.';
+    openSheet('settingsSheet');
+  }
+  $('settingsBtn').addEventListener('click', openSettings);
+  $('settingsBtn2').addEventListener('click', openSettings);
+  $('keepAliveRow').hidden = IS_IOS; // no effect on iPhone (see startKeepAlive)
+  $('copyLog').addEventListener('click', async () => {
+    const text = `Narrator v${self.APP_VERSION} · ${navigator.userAgent}\n` + playLog.join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Log copied. Paste it into your chat with Claude.');
+    } catch (e) {
+      // Clipboard blocked: select the text so it can be copied by hand.
+      const r = document.createRange();
+      r.selectNodeContents($('logView'));
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      toast('Press and hold the selected text to copy it.');
+    }
+  });
   $('voiceSel').addEventListener('change', (e) => { settings.voiceURI = e.target.value; changed(true); });
   $('rateRange').addEventListener('input', (e) => { settings.rate = Number(e.target.value); renderSettings(); });
   $('rateRange').addEventListener('change', () => changed(true));
@@ -743,7 +801,7 @@
   });
   $('testVoice').addEventListener('click', () => {
     if (!synth) return toast('This browser has no text-to-speech support');
-    stop();
+    stop('test voice');
     const token = ++state.token;
     setTimeout(() => speakChunk('This is how your books will sound. The dungeon core pulsed softly in the dark.', token), 80);
   });
