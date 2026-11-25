@@ -64,7 +64,7 @@ const waitSpoken = (text) => page.waitForFunction((t) => window.__spoken.include
 before(async () => {
   server = createServer();
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  base = `http://127.0.0.1:${server.address().port}/`;
+  base = `http://127.0.0.1:${server.address().port}/narrator/`;
   browser = await chromium.launch();
 });
 after(async () => {

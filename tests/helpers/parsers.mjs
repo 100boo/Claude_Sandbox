@@ -1,10 +1,10 @@
-// Load app/parsers.js (a UMD script) into Node with jsdom's DOMParser and JSZip.
+// Load apps/narrator/parsers.js (a UMD script) into Node with jsdom's DOMParser and JSZip.
 import { createRequire } from 'node:module';
 import { JSDOM } from 'jsdom';
 import JSZip from 'jszip';
 
 const require = createRequire(import.meta.url);
-const Parsers = require('../../app/parsers.js');
+const Parsers = require('../../apps/narrator/parsers.js');
 Parsers.configure({ DOMParser: new JSDOM('').window.DOMParser, JSZip });
 
 /** Minimal File stand-in: what parseFile() needs. */

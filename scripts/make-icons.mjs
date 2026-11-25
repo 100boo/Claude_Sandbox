@@ -1,11 +1,12 @@
-// Render app/icons/icon.svg to the PNG sizes the manifest and iOS need.
-// Usage: npm run icons   (uses the Playwright Chromium)
+// Render apps/<app>/icons/icon.svg to the PNG sizes the manifest and iOS need.
+// Usage: npm run icons -- <app>   (default: narrator; uses the Playwright Chromium)
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'app', 'icons');
+const appName = process.argv[2] || 'narrator';
+const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'apps', appName, 'icons');
 const svg = await readFile(path.join(dir, 'icon.svg'), 'utf8');
 const browser = await chromium.launch();
 const page = await browser.newPage();

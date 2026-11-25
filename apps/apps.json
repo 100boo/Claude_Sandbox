@@ -1,0 +1,8 @@
+[
+  {
+    "id": "narrator",
+    "name": "Narrator",
+    "description": "Listen to downloaded books (EPUB, TXT, HTML) read aloud.",
+    "icon": "narrator/icons/icon-192.png"
+  }
+]

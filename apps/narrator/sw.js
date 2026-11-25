@@ -1,7 +1,10 @@
 /* Narrator service worker: offline app shell + Android share-target inbox. */
 importScripts('version.js', 'db.js');
 
-const CACHE = 'narrator-' + self.APP_VERSION;
+// Every app in this repo shares one origin (and so one Cache Storage), so cache
+// names are namespaced per app and we only ever delete our own.
+const PREFIX = 'sandbox/narrator/';
+const CACHE = PREFIX + self.APP_VERSION;
 const SHELL = [
   './',
   'index.html',
@@ -25,7 +28,9 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    for (const key of await caches.keys()) if (key !== CACHE) await caches.delete(key);
+    for (const key of await caches.keys()) {
+      if (key.startsWith(PREFIX) && key !== CACHE) await caches.delete(key);
+    }
     await self.clients.claim();
   })());
 });
